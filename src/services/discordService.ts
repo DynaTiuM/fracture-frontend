@@ -14,21 +14,31 @@ export async function setupDiscord(): Promise<DiscordUser | null> {
     if (!discordSdk) {
       discordSdk = new DiscordSDK("1418639055650029828");
     }
-    
+
     await discordSdk.ready();
 
-    const auth = await discordSdk.commands.authenticate({});
+    const { code } = await discordSdk.commands.authorize({
+      client_id: "1418639055650029828",
+      response_type: "code",
+      prompt: "none",
+      scope: ["identify", "applications.commands"],
+    });
 
-    if (!auth.access_token) {
-      console.error("Discord authentication failed: no access_token");
-      return null;
-    }
+    if (!code) throw new Error("No authorization code");
+
+    const tokenResp = await fetch("https://03db6b18ef7c.ngrok-free.app/api/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    const { access_token } = await tokenResp.json();
+    if (!access_token) throw new Error("No access token returned");
+
+    await discordSdk.commands.authenticate({ access_token });
 
     const user = await fetch("https://discord.com/api/users/@me", {
-      headers: {
-        Authorization: `Bearer ${auth.access_token}`,
-      },
-    }).then((res) => res.json());
+      headers: { Authorization: `Bearer ${access_token}` },
+    }).then((r) => r.json());
 
     return user as DiscordUser;
   } catch (err) {
