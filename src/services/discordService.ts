@@ -1,4 +1,3 @@
-// src/services/discordService.ts
 import { DiscordSDK } from "@discord/embedded-app-sdk";
 
 export interface DiscordUser {
