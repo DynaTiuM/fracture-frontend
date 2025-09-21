@@ -9,7 +9,7 @@ export interface PlayerBonus {
   rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
 }
 
-export interface PlayerBonusesResponse {
+export interface PlayerBonusResponse {
   unused: PlayerBonus[];
   used: PlayerBonus[];
 }

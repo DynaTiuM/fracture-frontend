@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { getPlayerBonus } from "../../services/bonusService";
 import type { PlayerBonus } from "../../models/PlayerBonus";

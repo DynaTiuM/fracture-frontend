@@ -1,7 +1,7 @@
-import type { PlayerBonusesResponse } from "../models/PlayerBonus";
+import type { PlayerBonusResponse } from "../models/PlayerBonus";
 import api from "./api";
 
-export async function getPlayerBonuses(playerId: string): Promise<PlayerBonusesResponse> {
+export async function getPlayerBonus(playerId: string): Promise<PlayerBonusResponse> {
   const response = await api.get(`/bonus/player-bonuses/${playerId}`);
   return response.data;
 }

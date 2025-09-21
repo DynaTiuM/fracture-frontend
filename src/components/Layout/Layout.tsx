@@ -2,7 +2,7 @@ import CrystalSection from "../CrystalSection/CrystalSection";
 import ActionsSection from "../CrystalSection/CrystalActions";
 import ProgressBarSection from "../ProgressBarSection/ProgressBarSection";
 import Leaderboard from "../Leaderboard/Leaderboard";
-import BonusesSection from "../BonusesSection/BonusesSection";
+import BonusSection from "../BonusSection/BonusSection";
 import { ChestSection } from "../ChestSection.tsx/ChestSection";
 import type { LeaderboardPlayer } from "../../models/LeaderboardPlayer";
 import { getLeaderboard } from "../../services/leaderboardService";
@@ -26,7 +26,7 @@ export default function Layout() {
           <div className="flex flex-col gap-2 sm:gap-4 w-full">
             <CrystalSection />
             <ActionsSection onAction={(a) => console.log('Action:', a)} />
-            <BonusesSection />
+            <BonusSection />
             <ProgressBarSection />
           </div>
         </div>

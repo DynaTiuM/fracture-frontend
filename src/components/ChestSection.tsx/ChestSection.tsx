@@ -16,9 +16,6 @@ export function ChestSection() {
         transition={{ type: "spring", stiffness: 300, damping: 15 }}
         onClick={() => setOpened((o) => !o)}
       />
-      <span className="mt-1 text-base font-bold text-yellow-700 dark:text-yellow-200">
-        Chest {opened ? "opened" : "closed"}
-      </span>
     </div>
   );
 }
