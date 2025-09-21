@@ -12,7 +12,7 @@ let discordSdk: DiscordSDK | null = null;
 export async function setupDiscord(): Promise<DiscordUser | null> {
   try {
     if (!discordSdk) {
-      discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+      discordSdk = new DiscordSDK("1418639055650029828");
     }
     
     await discordSdk.ready();
