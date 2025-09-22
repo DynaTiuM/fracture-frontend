@@ -24,11 +24,9 @@ export async function setupDiscord(): Promise<DiscordUser | null> {
       scope: ["identify", "applications.commands"],
     });
 
-    console.log("code:", code);
-
     if (!code) throw new Error("No authorization code");
 
-    const tokenResp = await fetch("https://03db6b18ef7c.ngrok-free.app/api/token", {
+    const tokenResp = await fetch("/api/token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),

@@ -8,7 +8,6 @@ export default function App() {
   if (!user) return <p>Failed to load Discord user</p>;
   return (
   <div className="min-h-screen">
-    <h2>Welcome</h2>
     <Layout />
   </div>);
 }
