@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { setupDiscord, type DiscordUser } from "../services/discordService";
+import { createPlayer } from "../services/playerService";
 
 export function useDiscordUser() {
   const [user, setUser] = useState<DiscordUser | null>(null);
@@ -7,10 +8,17 @@ export function useDiscordUser() {
 
   useEffect(() => {
     async function fetchUser() {
-      setLoading(true);
-      const u = await setupDiscord();
-      setUser(u);
-      setLoading(false);
+      try {
+        const u = await setupDiscord();
+        setUser(u);
+        if (u) {
+          await createPlayer(u);
+        }
+      } catch (err) {
+        console.error("Unexpected error fetching Discord user", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchUser();
   }, []);

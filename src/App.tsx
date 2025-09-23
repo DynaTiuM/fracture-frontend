@@ -1,13 +1,15 @@
+import { ConnectionSection } from "./components/ConnectionSection/ConnectionSection";
 import Layout from "./components/Layout/Layout";
 import { useDiscordUser } from "./hooks/useDiscordUser";
 
 export default function App() {
   const { user, loading } = useDiscordUser();
 
-  if (loading) return <p>Loading Discord user...</p>;
-  if (!user) return <p>Failed to load Discord user</p>;
+  if (loading || !user) return <ConnectionSection message="Loading..." state="Loading" />;
+
   return (
-  <div className="min-h-screen">
-    <Layout />
-  </div>);
+    <div className="min-h-screen">
+      <Layout user={user} />
+    </div>
+  );
 }

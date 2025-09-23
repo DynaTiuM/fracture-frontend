@@ -1,7 +1,27 @@
+import { useEffect, useState } from "react";
 import type { Leaderboard } from "../../models/Leaderboard";
 import type { LeaderboardPlayer } from "../../models/LeaderboardPlayer";
+import { fetchPlayerAvatar } from "../../services/playerService";
+import { getLeaderboard } from "../../services/leaderboardService";
 
-export default function Leaderboard({ leaderboard }: Leaderboard) {
+interface LeaderboardProps {
+  avatars?: Record<string, string>;
+  setAvatars?: (avatars: Record<string, string>) => void;
+  hasActed: boolean;
+}
+
+export default function Leaderboard({ avatars, setAvatars, hasActed }: LeaderboardProps) {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>([]);
+  
+  async function fetchLeaderboard() {
+    const data = await getLeaderboard();
+    setLeaderboard(data);
+  }
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [hasActed]);
+  
   const session = leaderboard.slice().sort((a, b) => b.weeklyScore - a.weeklyScore);
   const allTime = leaderboard.slice().sort((a, b) => b.allTimeScore - a.allTimeScore);
 
@@ -10,6 +30,28 @@ export default function Leaderboard({ leaderboard }: Leaderboard) {
     "bg-gradient-to-r from-gray-400 to-gray-200 text-gray-900 border-gray-300",
     "bg-gradient-to-r from-orange-400 to-orange-200 text-orange-900 border-orange-300"
   ];
+
+  useEffect(() => {
+    if(hasActed) {
+    }
+  });
+
+   useEffect(() => {
+    const fetchAvatars = async () => {
+      const newAvatars: Record<string, string> = {};
+      for (const player of leaderboard) {
+        try {
+          const avatar = await fetchPlayerAvatar(player.discordId);
+          newAvatars[player.discordId] = avatar;
+        } catch (err) {
+          console.error("Failed to fetch avatar for", player.discordId, err);
+        }
+      }
+      if(setAvatars) setAvatars(newAvatars);
+    };
+    fetchAvatars();
+  }, [leaderboard]);
+
 
   const renderColumn = (title: string, players: LeaderboardPlayer[]) => (
     <div className="flex-1">
@@ -20,7 +62,7 @@ export default function Leaderboard({ leaderboard }: Leaderboard) {
         {players.map((player, index) => (
           <div
             key={player.discordId}
-            className={`flex items-center justify-between px-5 py-4 rounded-2xl shadow-md transition-transform transform hover:scale-[1.025] border-2
+            className={`flex items-center justify-between px-5 py-4 rounded-xl shadow-md transition-transform transform hover:scale-[1.025] border-2
               ${
                 index === 0 ? "bg-yellow-50 border-yellow-300" :
                 index === 1 ? "bg-gray-50 border-gray-300" :
@@ -36,7 +78,20 @@ export default function Leaderboard({ leaderboard }: Leaderboard) {
                 {index + 1}
               </span>
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-xl shadow-inner">
-                {player.username.charAt(0).toUpperCase()}
+                {
+                  avatars && avatars[player.discordId] ? (
+                    <img
+                      src={avatars && avatars[player.discordId] || ""}
+                      alt={player.username}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-xl text-gray-700 dark:text-gray-300">
+                      {player.username.charAt(0).toUpperCase()}
+                    </span>
+                  )
+                }
+                
               </div>
               <span className={`font-semibold text-lg ${index < 3 ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}>
                 {player.username}
@@ -46,6 +101,7 @@ export default function Leaderboard({ leaderboard }: Leaderboard) {
                   {player.badge.name}
                 </span>
               )}
+              
             </div>
             <span className={`font-bold text-2xl text-right ${index < 3 ? 'text-gray-900' : 'text-gray-700 dark:text-gray-200'}`}>
               {title === "All Time" ? player.allTimeScore : player.weeklyScore}
@@ -57,8 +113,8 @@ export default function Leaderboard({ leaderboard }: Leaderboard) {
   );
 
   return (
-    <div className="w-full min-w-0 flex-none bg-white/80 dark:bg-gray-900/80 rounded-2xl lg:rounded-3xl shadow-2xl p-3 sm:p-4 lg:p-6 border border-gray-200 dark:border-gray-800">
-  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center mt-4 sm:mt-0 mb-4 sm:mb-6 lg:mb-8 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg tracking-tight uppercase">
+    <div className="w-full min-w-0 flex-none bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-xl shadow-lg border border-white/30 dark:border-gray-700/50 p-3 sm:p-4 lg:p-6 border">
+  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center mt-4 sm:mt-0 mb-4 sm:mb-6 lg:mb-8 bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent drop-shadow-lg tracking-tight uppercase">
         Leaderboard
       </h1>
       <div className="flex flex-col md:flex-row gap-6 md:gap-4 lg:gap-6 w-full flex-wrap min-w-0 mt-4 sm:mt-0">

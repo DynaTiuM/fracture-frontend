@@ -24,25 +24,39 @@ export async function setupDiscord(): Promise<DiscordUser | null> {
       scope: ["identify", "applications.commands"],
     });
 
-    if (!code) throw new Error("No authorization code");
+    let access_token: string | null = null;
 
-    const tokenResp = await fetch("/api/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-    const { access_token } = await tokenResp.json();
-    if (!access_token) throw new Error("No access token returned");
+    if (code) {
+      const tokenResp = await fetch("/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await tokenResp.json();
+      access_token = data.access_token;
+      if (!access_token) throw new Error("No access token returned");
 
-    await discordSdk.commands.authenticate({ access_token });
+      await discordSdk.commands.authenticate({ access_token });
+    } else {
+      console.warn("User already authenticated, waiting...");
+    }
 
-    const user = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: `Bearer ${access_token}` },
-    }).then((r) => r.json());
+    if (access_token) {
+      const user = await fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }).then((r) => r.json());
+      return user as DiscordUser;
+    }
 
-    return user as DiscordUser;
-  } catch (err) {
-    console.error("Failed to setup Discord", err);
     return null;
+
+  } catch (err: any) {
+    if (err?.code === 4002) {
+      console.warn("User already authenticated, continuing...");
+      return null;
+    } else {
+      console.error("Failed to authenticate Discord", err);
+      throw err;
+    }
   }
 }
