@@ -3,14 +3,15 @@ import type { Leaderboard } from "../../models/Leaderboard";
 import type { LeaderboardPlayer } from "../../models/LeaderboardPlayer";
 import { fetchPlayerAvatar } from "../../services/playerService";
 import { getLeaderboard } from "../../services/leaderboardService";
+import type { DiscordUser } from "../../services/discordService";
 
 interface LeaderboardProps {
-  avatars?: Record<string, string>;
-  setAvatars?: (avatars: Record<string, string>) => void;
+  setAllPlayers: (player: DiscordUser[]) => void;
+  allPlayers: DiscordUser[];
   hasActed: boolean;
 }
 
-export default function Leaderboard({ avatars, setAvatars, hasActed }: LeaderboardProps) {
+export default function Leaderboard({ setAllPlayers, allPlayers, hasActed }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>([]);
   
   async function fetchLeaderboard() {
@@ -37,19 +38,24 @@ export default function Leaderboard({ avatars, setAvatars, hasActed }: Leaderboa
   });
 
    useEffect(() => {
-    const fetchAvatars = async () => {
-      const newAvatars: Record<string, string> = {};
+    const fetchPlayers = async () => {
+      const players: DiscordUser[] = [];
       for (const player of leaderboard) {
         try {
           const avatar = await fetchPlayerAvatar(player.discordId);
-          newAvatars[player.discordId] = avatar;
+          players.push({
+            id: player.discordId,
+            username: player.username,
+            avatar: avatar
+          });
         } catch (err) {
           console.error("Failed to fetch avatar for", player.discordId, err);
         }
       }
-      if(setAvatars) setAvatars(newAvatars);
+      setAllPlayers(players);
     };
-    fetchAvatars();
+
+    fetchPlayers();
   }, [leaderboard]);
 
 
@@ -59,55 +65,60 @@ export default function Leaderboard({ avatars, setAvatars, hasActed }: Leaderboa
         {title}
       </h2>
       <div className="space-y-4">
-        {players.map((player, index) => (
-          <div
-            key={player.discordId}
-            className={`flex items-center justify-between px-5 py-4 rounded-xl shadow-md transition-transform transform hover:scale-[1.025] border-2
-              ${
-                index === 0 ? "bg-yellow-50 border-yellow-300" :
-                index === 1 ? "bg-gray-50 border-gray-300" :
-                index === 2 ? "bg-orange-50 border-orange-300" :
-                "bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700"
-              }
-            `}
-          >
-            <div className={`flex items-center gap-4 ${index < 3 ? 'text-gray-900' : ''}`}> 
-              <span className={`w-10 h-10 flex items-center justify-center font-extrabold text-lg rounded-full border-2 shadow-sm
-                ${medalColors[index] ?? "bg-gray-200 text-gray-700 border-gray-300"}
-              `}>
-                {index + 1}
-              </span>
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-xl shadow-inner">
-                {
-                  avatars && avatars[player.discordId] ? (
-                    <img
-                      src={avatars && avatars[player.discordId] || ""}
-                      alt={player.username}
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  ) : (
-                    <span className="text-xl text-gray-700 dark:text-gray-300">
-                      {player.username.charAt(0).toUpperCase()}
-                    </span>
-                  )
+        {players.map((player, index) => {
+          const user = allPlayers.find(u => u.id === player.discordId);
+          return (
+        
+            <div
+              key={player.discordId}
+              className={`flex items-center justify-between px-5 py-4 rounded-xl shadow-md transition-transform transform hover:scale-[1.025] border-2
+                ${
+                  index === 0 ? "bg-yellow-50 border-yellow-300" :
+                  index === 1 ? "bg-gray-50 border-gray-300" :
+                  index === 2 ? "bg-orange-50 border-orange-300" :
+                  "bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700"
                 }
+              `}
+            >
+              <div className={`flex items-center gap-4 ${index < 3 ? 'text-gray-900' : ''}`}> 
+                <span className={`w-10 h-10 flex items-center justify-center font-extrabold text-lg rounded-full border-2 shadow-sm
+                  ${medalColors[index] ?? "bg-gray-200 text-gray-700 border-gray-300"}
+                `}>
+                  {index + 1}
+                </span>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-xl shadow-inner">
+                  {
+                    user?.avatar ? (
+                      <img
+                        src={user?.avatar}
+                        alt={player.username}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <span className="text-xl text-gray-700 dark:text-gray-300">
+                        {player.username.charAt(0).toUpperCase()}
+                      </span>
+                    )
+                  }
+                  
+                </div>
+                <span className={`font-semibold text-lg ${index < 3 ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}>
+                  {player.username}
+                </span>
+                {player.badge && (
+                  <span className="ml-2 px-3 py-1 text-xs font-bold text-white rounded-full bg-gradient-to-r from-blue-500 to-blue-400 shadow">
+                    {player.badge.name}
+                  </span>
+                )}
                 
               </div>
-              <span className={`font-semibold text-lg ${index < 3 ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}>
-                {player.username}
+              <span className={`font-bold text-2xl text-right ${index < 3 ? 'text-gray-900' : 'text-gray-700 dark:text-gray-200'}`}>
+                {title === "All Time" ? player.allTimeScore : player.weeklyScore}
               </span>
-              {player.badge && (
-                <span className="ml-2 px-3 py-1 text-xs font-bold text-white rounded-full bg-gradient-to-r from-blue-500 to-blue-400 shadow">
-                  {player.badge.name}
-                </span>
-              )}
-              
             </div>
-            <span className={`font-bold text-2xl text-right ${index < 3 ? 'text-gray-900' : 'text-gray-700 dark:text-gray-200'}`}>
-              {title === "All Time" ? player.allTimeScore : player.weeklyScore}
-            </span>
-          </div>
-        ))}
+          )
+        }
+        )}
       </div>
     </div>
   );

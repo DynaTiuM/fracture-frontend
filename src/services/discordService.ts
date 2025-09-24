@@ -3,7 +3,7 @@ import { DiscordSDK } from "@discord/embedded-app-sdk";
 export interface DiscordUser {
   id: string;
   username: string;
-  discriminator: string;
+  discriminator?: string;
   avatar: string | null;
 }
 

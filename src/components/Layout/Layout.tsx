@@ -3,12 +3,14 @@ import ActionsSection from "../CrystalSection/CrystalActions";
 import ProgressBarSection from "../ProgressBarSection/ProgressBarSection";
 import Leaderboard from "../Leaderboard/Leaderboard";
 import BonusSection from "../BonusSection/BonusSection";
-import { ChestSection } from "../ChestSection.tsx/ChestSection";
+import { ChestSection } from "../ChestSection/ChestSection";
 import { useEffect, useState } from "react";
 import type { DiscordUser } from "../../services/discordService";
 import PlayerSection from "../PlayerSection/PlayerSection";
 import { fetchHasPlayerPlayed, sendPlayerAction } from "../../services/playerService";
 import AlreadyPlayedPlayersSection from "../AlreadyPlayedPlayersSection/AlreadyPlayedPlayersSection";
+import { RevealActionsModal } from "../Modals/RevealActionsModal";
+import { BonusMessageModal } from "../Modals/BonusMessageModal";
 
 interface LayoutProps {
   user: DiscordUser | null;
@@ -17,7 +19,8 @@ interface LayoutProps {
 export default function Layout({ user }: LayoutProps) {
   const [currentAction, setCurrentAction] = useState<"absorb" | "repair" | "hold" | null>(null);
   const [action, setAction] = useState<"absorb" | "repair" | "hold" | null>(null);
-  const [avatars, setAvatars] = useState<Record<string, string>>({});
+  const [allPlayers, setAllPlayers] = useState<DiscordUser[]>([]);
+  const [alreadyPlayedPlayerIds, setAlreadyPlayedPlayerIds] = useState<string[]>([]);
   const [hasDrawn, setHasDrawn] = useState<boolean>(true);
   const [hasActed, setHasActed] = useState<boolean>(false);
 
@@ -55,6 +58,8 @@ export default function Layout({ user }: LayoutProps) {
 
   return (
     <div className="fixed inset-0 min-h-screen w-full bg-gradient-to-br from-purple-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 overflow-auto">
+      <RevealActionsModal allPlayers={allPlayers} />
+      <BonusMessageModal />
       <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-8 py-2 sm:py-4 lg:py-8 px-1 sm:px-2">
         <div className="flex flex-col gap-2 sm:gap-4 lg:gap-8 flex-[1_1_0%] min-w-0 w-full lg:w-auto">
           <div className="flex flex-col gap-2 sm:gap-4 w-full">
@@ -63,12 +68,12 @@ export default function Layout({ user }: LayoutProps) {
                 <PlayerSection user={user} />
               </div>
               <div className="flex-1 min-w-0 flex flex-col">
-                <AlreadyPlayedPlayersSection avatars={avatars} />
+                <AlreadyPlayedPlayersSection allPlayers={allPlayers} alreadyPlayedPlayerIds={alreadyPlayedPlayerIds} setAlreadyPlayedPlayerIds={setAlreadyPlayedPlayerIds} />
               </div>
             </div>
             <CrystalSection action={currentAction} />
             <ActionsSection action={action} onCurrentAction={setCurrentAction} hasActed={hasActed} setHasActed={setHasActed} setAction={setAction} />
-            <BonusSection user={user} setHasDrawn={setHasDrawn} />
+            <BonusSection user={user} setHasDrawn={setHasDrawn} allPlayers={allPlayers} alreadyPlayedPlayerIds={alreadyPlayedPlayerIds} />
             <ProgressBarSection />
           </div>
         </div>
@@ -78,7 +83,7 @@ export default function Layout({ user }: LayoutProps) {
               <ChestSection user={user} hasDrawn = {hasDrawn} setHasDrawn={setHasDrawn} />
             </div>
             <div className="w-full max-w-full">
-              <Leaderboard avatars = {avatars} setAvatars = {setAvatars} hasActed = {hasActed} />
+              <Leaderboard setAllPlayers={setAllPlayers} allPlayers={allPlayers} hasActed = {hasActed} />
             </div>
           </div>
         </div>

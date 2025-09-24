@@ -1,3 +1,4 @@
+import type { PlayerBonus } from "../models/PlayerBonus";
 import api from "./api";
 import type { DiscordUser } from "./discordService";
 
@@ -26,3 +27,9 @@ export async function fetchHasPlayerPlayed(playerId: string) {
   const { data } = await api.get(`/players/${playerId}/has-played`);
   return data;
 }
+
+export async function fetchPlayerBonus(playerId: string): Promise<PlayerBonus[]> {
+  const response = await api.get(`/players/${playerId}/bonus`);
+  return response.data;
+}
+

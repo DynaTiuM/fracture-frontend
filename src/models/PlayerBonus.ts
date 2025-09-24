@@ -7,6 +7,7 @@ export interface PlayerBonus {
   name: string;
   description: string;
   rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
+  targetMode: "none" | "single" | "multiple";
 }
 
 export interface PlayerBonusResponse {

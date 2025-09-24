@@ -1,13 +1,18 @@
 import type { Bonus } from "../models/Bonus";
-import type { PlayerBonus } from "../models/PlayerBonus";
 import api from "./api";
 
-export async function getPlayerBonus(playerId: string): Promise<PlayerBonus[]> {
-  const response = await api.get(`/bonus/player-bonus/${playerId}`);
-  return response.data;
-}
 
 export async function getAllBonus(): Promise<Bonus[]> {
   const response = await api.get(`/bonus`);
+  return response.data;
+}
+
+export async function usePlayerBonus(playerBonusId: string, playerId: string, targetIds: string[], useTomorrow = false )/* : Promise<PlayerBonusUsage[]> */ {
+  const response = await api.post(`/bonus/use`, {
+    playerBonusId,
+    playerId,
+    targetIds,
+    useTomorrow,
+  });
   return response.data;
 }
